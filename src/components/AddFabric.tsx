@@ -10,22 +10,18 @@ const initialValues = {
   endDate: new Date().toISOString().split("T")[0],
   productionPerDay: "",
   totalOrderQuantity: "",
-  fabricName: [],
-  perPieceRequirement: "",
-  unit: "Metre",
-  processes: [],
-  colorQuantity: [{ color: "", quantity: "" }],
-  skippedStages: [],
+  chinaFabric: [],
+  fabrics: [
+    {
+      fabricName: [],
+      perPieceRequirement: "",
+      unit: "Metre",
+      processes: [],
+      colorQuantity: [{ color: "", quantity: "" }],
+      stagestoBeSKipped: [],
+    },
+  ],
   isInternationalFabricPresent: false,
-  chinaFabrics: [],
-  majorFabric: "None",
-  trims: [],
-  accessories: [],
-};
-
-// Form submission handler
-const handleSubmit = (values: any) => {
-  console.log("Form Data:", values); // Add this line to console log form data
 };
 
 // Dropdown options
@@ -41,6 +37,16 @@ const fabricOptions = [
   { value: "Polyester", label: "Polyester" },
   { value: "Wool", label: "Wool" },
   { value: "Silk", label: "Silk" },
+];
+
+const stagesSKippedOptions = [
+  { value: "FOB", label: "FOB" },
+  { value: "TOP", label: "TOP" },
+];
+
+const chinaFabricOptions = [
+  { value: "CHINA LACE", label: "CHINA LACE" },
+  { value: "BAG VIOL", label: "BAG VIOL" },
 ];
 
 // RadioButton Component
@@ -68,23 +74,23 @@ const RadioButton = ({ name, value, label, checked, onChange }: any) => (
 );
 
 const FabricForm = () => {
-  const [unit, setUnit] = useState<boolean>(true);
   const [isInternationalFabricPresent, setIsInternationalFabricPresent] =
     useState<boolean>(false);
+
+  const handleSubmit = (values: any) => {
+    console.log("Form Data:", values);
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-4 bg-white rounded shadow-md">
       <h1 className="text-2xl font-bold mb-10 text-center">
         T&A DATA SUBMISSION FORM
       </h1>
-      <Formik
-        initialValues={initialValues}
-        // validationSchema={validationSchema}
-        onSubmit={handleSubmit}
-      >
+      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
         {({ values, setFieldValue }) => (
           <Form className="space-y-4">
+            {/* Start Date and End Date */}
             <div className="flex space-x-4">
-              {/* Start Date */}
               <div className="flex-1">
                 <label className="block text-sm font-medium mb-1">
                   Start Date
@@ -100,8 +106,6 @@ const FabricForm = () => {
                   className="text-red-500 text-sm"
                 />
               </div>
-
-              {/* End Date */}
               <div className="flex-1">
                 <label className="block text-sm font-medium mb-1">
                   End Date
@@ -119,8 +123,8 @@ const FabricForm = () => {
               </div>
             </div>
 
+            {/* Production Per Day and Total Order Quantity */}
             <div className="flex space-x-4">
-              {/* Production Per Day */}
               <div className="flex-1">
                 <label className="block text-sm font-medium mb-1">
                   Production Per Day Per Machine
@@ -136,8 +140,6 @@ const FabricForm = () => {
                   className="text-red-500 text-sm"
                 />
               </div>
-
-              {/* Total Order Quantity */}
               <div className="flex-1">
                 <label className="block text-sm font-medium mb-1">
                   Total Order Quantity
@@ -155,144 +157,202 @@ const FabricForm = () => {
               </div>
             </div>
 
-            {/* Fabric Name Dropdown */}
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Fabric Name
-              </label>
-              <SearchableDropdown
-                name="fabricName"
-                options={fabricOptions}
-                value={values.fabricName}
-                onChange={(selectedOption: any) =>
-                  setFieldValue("fabricName", selectedOption)
-                }
-                placeholder="Searchable Dropdown"
-              />
-              <ErrorMessage
-                name="fabricName"
-                component="div"
-                className="text-red-500 text-sm"
-              />
-            </div>
+            {/* Fabric Section */}
+            <FieldArray name="fabrics">
+              {({ push, remove }) => (
+                <>
+                  {values.fabrics.map((fabric, index) => (
+                    <div key={index} className="border p-4 rounded mb-4">
+                      <h2 className="text-lg font-semibold mb-2">
+                        Fabric Section {index + 1}
+                      </h2>
 
-            {/* Per Piece Requirement and Unit Selection */}
-            <div className="flex space-x-4 items-start">
-              <div className="flex-1">
-                <label className="block text-sm font-medium mb-1">
-                  Per Piece Requirement
-                </label>
-                <Field
-                  type="number"
-                  name="perPieceRequirement"
-                  className="w-full border p-2 rounded"
-                />
-                <ErrorMessage
-                  name="perPieceRequirement"
-                  component="div"
-                  className="text-red-500 text-sm"
-                />
-              </div>
-
-              
-              {/* Unit Selection */}
-              <div className="flex-1">
-                <label className="block text-sm font-medium mb-1">
-                  Choose Unit
-                </label>
-                <div className="flex items-center space-x-6 mt-3">
-                  <RadioButton
-                    name="unit"
-                    value="Metre"
-                    label="M"
-                    checked={unit}
-                    onChange={() => {
-                      setUnit(true);
-                      setFieldValue("unit", "Metre");
-                    }}
-                  />
-                  <RadioButton
-                    name="unit"
-                    value="Kg"
-                    label="Kg"
-                    checked={!unit}
-                    onChange={() => {
-                      setUnit(false);
-                      setFieldValue("unit", "Kg");
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Processes Dropdown */}
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Processes
-              </label>
-              <MultiSelectDropdown
-                name="processes"
-                options={processOptions}
-                value={values.processes}
-                onChange={(selectedOptions: any) =>
-                  setFieldValue("processes", selectedOptions)
-                }
-              />
-              <ErrorMessage
-                name="processes"
-                component="div"
-                className="text-red-500 text-sm"
-              />
-            </div>
-
-            {/* Color & Quantity */}
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Color & Quantity
-              </label>
-              <FieldArray name="colorQuantity">
-                {({ push, remove }) => (
-                  <>
-                    {values.colorQuantity.map((item, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center space-x-2 mb-2"
-                      >
-                        <Field
-                          name={`colorQuantity[${index}].color`}
-                          placeholder="Color"
-                          className="border p-2 rounded w-full"
+                      {/* Fabric Name Dropdown */}
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Fabric Name
+                        </label>
+                        <SearchableDropdown
+                          name={`fabrics[${index}].fabricName`}
+                          options={fabricOptions}
+                          value={fabric.fabricName}
+                          onChange={(selectedOption: any) =>
+                            setFieldValue(
+                              `fabrics[${index}].fabricName`,
+                              selectedOption
+                            )
+                          }
+                          placeholder="Searchable Dropdown"
                         />
-                        <Field
-                          name={`colorQuantity[${index}].quantity`}
-                          placeholder="Quantity"
-                          className="border p-2 rounded w-full"
+                        <ErrorMessage
+                          name={`fabrics[${index}].fabricName`}
+                          component="div"
+                          className="text-red-500 text-sm"
                         />
-                        <button
-                          type="button"
-                          onClick={() => remove(index)}
-                          className="text-red-500"
-                        >
-                          Remove
-                        </button>
                       </div>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => push({ color: "", quantity: "" })}
-                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                    >
-                      Add Color & Quantity
-                    </button>
-                  </>
-                )}
-              </FieldArray>
-            </div>
 
-            {/* International Fabric Present */}
+                      {/* Per Piece Requirement and Unit Selection */}
+                      <div className="flex space-x-4">
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium mb-1">
+                            Per Piece Requirement
+                          </label>
+                          <Field
+                            type="number"
+                            name={`fabrics[${index}].perPieceRequirement`}
+                            className="w-full border p-2 rounded"
+                          />
+                          <ErrorMessage
+                            name={`fabrics[${index}].perPieceRequirement`}
+                            component="div"
+                            className="text-red-500 text-sm"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium mb-1">
+                            Unit
+                          </label>
+                          <div className="flex items-center space-x-4">
+                            <RadioButton
+                              name={`fabrics[${index}].unit`}
+                              value="Metre"
+                              label="Metre"
+                              checked={fabric.unit === "Metre"}
+                              onChange={() =>
+                                setFieldValue(`fabrics[${index}].unit`, "Metre")
+                              }
+                            />
+                            <RadioButton
+                              name={`fabrics[${index}].unit`}
+                              value="Kg"
+                              label="Kg"
+                              checked={fabric.unit === "Kg"}
+                              onChange={() =>
+                                setFieldValue(`fabrics[${index}].unit`, "Kg")
+                              }
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Color & Quantity */}
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Color & Quantity
+                        </label>
+                        <FieldArray name={`fabrics[${index}].colorQuantity`}>
+                          {({ push, remove }) => (
+                            <>
+                              {fabric.colorQuantity.map((_, colorIndex) => (
+                                <div
+                                  key={colorIndex}
+                                  className="flex items-center space-x-2 mb-2"
+                                >
+                                  <Field
+                                    name={`fabrics[${index}].colorQuantity[${colorIndex}].color`}
+                                    placeholder="Color"
+                                    className="border p-2 rounded w-full"
+                                  />
+                                  <Field
+                                    name={`fabrics[${index}].colorQuantity[${colorIndex}].quantity`}
+                                    placeholder="Quantity"
+                                    className="border p-2 rounded w-full"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => remove(colorIndex)}
+                                    className="text-red-500"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              ))}
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  push({ color: "", quantity: "" })
+                                }
+                                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                              >
+                                Add Color & Quantity
+                              </button>
+                            </>
+                          )}
+                        </FieldArray>
+                      </div>
+
+                      <div className="flex space-x-4">
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium mb-1">
+                            Processes
+                          </label>
+                          <MultiSelectDropdown
+                            name={`fabrics[${index}].processes`}
+                            options={processOptions}
+                            value={fabric.processes}
+                            onChange={(selectedOptions: any) =>
+                              setFieldValue(
+                                `fabrics[${index}].processes`,
+                                selectedOptions
+                              )
+                            }
+                            placeholder="Select Processes"
+                          />
+                        </div>
+
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium mb-1">
+                            Stages to Be Skipped
+                          </label>
+                          <MultiSelectDropdown
+                            name={`fabrics[${index}].stagestoBeSKipped`}
+                            options={stagesSKippedOptions}
+                            value={fabric.stagestoBeSKipped}
+                            onChange={(selectedOptions: any) =>
+                              setFieldValue(
+                                `fabrics[${index}].stagestoBeSKipped`,
+                                selectedOptions
+                              )
+                            }
+                            placeholder="Select Stages to Skip"
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => remove(index)}
+                        className="text-red-500 mt-4"
+                      >
+                        Remove Fabric Section
+                      </button>
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      push({
+                        fabricName: [],
+                        perPieceRequirement: "",
+                        unit: "Metre",
+                        processes: [],
+                        colorQuantity: [{ color: "", quantity: "" }],
+                        stagestoBeSKipped: [],
+                      })
+                    }
+                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                  >
+                    Add More Fabrics
+                  </button>
+                </>
+              )}
+            </FieldArray>
+
+            {/* Is China Fabric Present */}
             <div>
               <label className="block text-sm font-medium mb-1">
-                International Fabrics Present
+                Is China Fabric Present ?
               </label>
               <div className="flex items-center space-x-6">
                 <RadioButton
@@ -313,16 +373,37 @@ const FabricForm = () => {
                   onChange={() => {
                     setIsInternationalFabricPresent(false);
                     setFieldValue("isInternationalFabricPresent", false);
+                    setFieldValue("chinaFabric", []);
                   }}
                 />
               </div>
             </div>
 
-            {/* Submit Button */}
-            <div className="mt-6">
+            {isInternationalFabricPresent && (
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Select China Fabric
+                </label>
+                <MultiSelectDropdown
+                  name="chinaFabric"
+                  options={chinaFabricOptions}
+                  value={values.chinaFabric}
+                  onChange={(selectedOptions: any) =>
+                    setFieldValue("chinaFabric", selectedOptions)
+                  }
+                />
+                <ErrorMessage
+                  name="chinaFabric"
+                  component="div"
+                  className="text-red-500 text-sm"
+                />
+              </div>
+            )}
+
+            <div className="flex justify-center mt-6">
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
               >
                 Submit
               </button>
