@@ -1,15 +1,20 @@
 import React, { useState } from "react";
 import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import MultiSelectDropdown from "./Dropdown";
-import SearchableDropdown from "./SearchableDropdown";
+
+import { FormValues } from "../../types/componentTypes";
+import { chinaFabricOptions, fabricOptions, processOptions, stagesSKippedOptions } from "../Constants/enums";
+import Radiobutton from "../Form/Radiobutton";
+import SearchableDropdown from "../Form/SingleSearchableDropdown";
+import MultiSelectDropdown from "../Form/MultiSelectDropdown";
 
 // Initial Form Values
-const initialValues = {
+const initialValues: FormValues = {
   startDate: new Date().toISOString().split("T")[0],
   endDate: new Date().toISOString().split("T")[0],
   productionPerDay: "",
   totalOrderQuantity: "",
+  majorFabric: null,
   chinaFabric: [],
   fabrics: [
     {
@@ -23,55 +28,6 @@ const initialValues = {
   ],
   isInternationalFabricPresent: false,
 };
-
-// Dropdown options
-const processOptions = [
-  { value: "DYING", label: "DYING" },
-  { value: "MOCK UP", label: "MOCK UP" },
-  { value: "WASHING", label: "WASHING" },
-  { value: "CUTTING", label: "CUTTING" },
-];
-
-const fabricOptions = [
-  { value: "Cotton", label: "Cotton" },
-  { value: "Polyester", label: "Polyester" },
-  { value: "Wool", label: "Wool" },
-  { value: "Silk", label: "Silk" },
-];
-
-const stagesSKippedOptions = [
-  { value: "FOB", label: "FOB" },
-  { value: "TOP", label: "TOP" },
-];
-
-const chinaFabricOptions = [
-  { value: "CHINA LACE", label: "CHINA LACE" },
-  { value: "BAG VIOL", label: "BAG VIOL" },
-];
-
-// RadioButton Component
-const RadioButton = ({ name, value, label, checked, onChange }: any) => (
-  <label className="flex items-center space-x-2">
-    <Field
-      type="radio"
-      name={name}
-      value={value}
-      className="hidden"
-      checked={checked}
-      onChange={onChange}
-    />
-    <span
-      className={`w-5 h-5 rounded-full border-2 border-gray-400 flex items-center justify-center`}
-    >
-      <span
-        className={`w-2.5 h-2.5 rounded-full ${
-          checked ? "bg-black" : "bg-gray-300"
-        }`}
-      />
-    </span>
-    <span className="text-sm">{label}</span>
-  </label>
-);
 
 const FabricForm = () => {
   const [isInternationalFabricPresent, setIsInternationalFabricPresent] =
@@ -212,8 +168,8 @@ const FabricForm = () => {
                           <label className="block text-sm font-medium mb-1">
                             Unit
                           </label>
-                          <div className="flex items-center space-x-4">
-                            <RadioButton
+                          <div className="flex items-center space-x-4 mt-3">
+                            <Radiobutton
                               name={`fabrics[${index}].unit`}
                               value="Metre"
                               label="Metre"
@@ -222,7 +178,7 @@ const FabricForm = () => {
                                 setFieldValue(`fabrics[${index}].unit`, "Metre")
                               }
                             />
-                            <RadioButton
+                            <Radiobutton
                               name={`fabrics[${index}].unit`}
                               value="Kg"
                               label="Kg"
@@ -355,7 +311,7 @@ const FabricForm = () => {
                 Is China Fabric Present ?
               </label>
               <div className="flex items-center space-x-6">
-                <RadioButton
+                <Radiobutton
                   name="isInternationalFabricPresent"
                   value="true"
                   label="Yes"
@@ -365,7 +321,7 @@ const FabricForm = () => {
                     setFieldValue("isInternationalFabricPresent", true);
                   }}
                 />
-                <RadioButton
+                <Radiobutton
                   name="isInternationalFabricPresent"
                   value="false"
                   label="No"
@@ -378,7 +334,6 @@ const FabricForm = () => {
                 />
               </div>
             </div>
-
             {isInternationalFabricPresent && (
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -399,6 +354,27 @@ const FabricForm = () => {
                 />
               </div>
             )}
+
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Choose Major Fabric
+              </label>
+              <SearchableDropdown
+                name="majorFabric"
+                options={[]}
+                value={values.majorFabric}
+                onChange={(selectedOption: any) =>
+                  setFieldValue("majorFabric", selectedOption)
+                }
+                placeholder="Searchable Dropdown"
+              />
+
+              <ErrorMessage
+                name="majorFabric"
+                component="div"
+                className="text-red-500 text-sm"
+              />
+            </div>
 
             <div className="flex justify-center mt-6">
               <button
